@@ -13,6 +13,19 @@ export default class ChunkManager {
         return x + "," + y
     }
 
+    getPiece(x, y) {
+        const cx = Math.floor(x / 16)
+        const cy = Math.floor(y / 16)
+        const chunk = this.getChunk(cx, cy)
+        const dx = this.mod(x, 16)
+        const dy = this.mod(y, 16)
+        return chunk.data[dy * chunk.size + dx]
+    }
+
+    mod(n, m) {
+        return ((n % m) + m) % m
+    }
+
     getChunk(x, y) {
         const k = this.key(x, y)
         if (!this.chunks.has(k)) {
@@ -32,6 +45,15 @@ export default class ChunkManager {
             }
         }
 
+    }
+    setPiece(x, y, piece) {
+        const cx = Math.floor(x / 16)
+        const cy = Math.floor(y / 16)
+        const chunk = this.getChunk(cx, cy)
+        const dx = this.mod(x, 16)
+        const dy = this.mod(y, 16)
+        chunk.data[dy * chunk.size + dx] = piece
+        chunk.updateTexture()
     }
 
     getVisibleChunks() {

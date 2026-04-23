@@ -19,6 +19,7 @@ export default class Renderer {
         window.addEventListener("resize", () => this.resize())
         this.shader = new Shader(this.gl, vertex, fragment)
         this.camera = null
+        this.selectedPiece = [0, 0]
         this.initQuad()
     }
 
@@ -51,15 +52,19 @@ export default class Renderer {
         gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW)
     }
 
+    setSelectedPiece(x, y) {
+        this.selectedPiece = [x, y]
+    }
+
     render(chunks) {
         const gl = this.gl
         gl.clearColor(0, 0, 0, 1)
         gl.clear(gl.COLOR_BUFFER_BIT)
         this.shader.use()
-        this.atlas.bind(1)
+        this.atlas.bind(2)
         gl.uniform1i(
             gl.getUniformLocation(this.shader.program, "u_pieceAtlas"),
-            1
+            2
         )
         gl.uniform1f(
             gl.getUniformLocation(this.shader.program, "u_atlasCols"),
@@ -83,6 +88,12 @@ export default class Renderer {
             gl.getUniformLocation(this.shader.program, "u_resolution"),
             this.canvas.width,
             this.canvas.height
+        )
+
+        gl.uniform2f(
+            gl.getUniformLocation(this.shader.program, "u_selectedPiece"),
+            this.selectedPiece[0],
+            this.selectedPiece[1]
         )
 
         for (const chunk of chunks) {
