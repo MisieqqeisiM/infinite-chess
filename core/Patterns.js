@@ -163,15 +163,30 @@ export function getPiece(x, y) {
 }
 
 export function getTreePiece(x, y) {
-    // if (y >= 0) return treeRootNode(x, y);
-    return layer(2, x, y);
+    if (y >= 0) return treeRootNode(x, y);
+    let n = -1;
+    let depth = 0
+    let shift = 0;
+    while (y < -depth) {
+        n++;
+        depth += layerDepth(n);
+        shift += layerShift(n);
+    }
+
+    return layer(n, x - shift, y + depth);
+}
+
+function layerShift(n) {
+    if (n == 0) return 0;
+    const no_nodes = pow(2, n);
+    return 12 * no_nodes / 4 - 10;
 }
 
 function layerDepth(n) {
     if (n == 0) return 14 + 4;
     const no_nodes = pow(2, n)
     const bottom_width = 12 * no_nodes;
-    return bottom_width - 12;
+    return bottom_width - 10;
 }
 function mod(a, b) {
     return ((a % b) + b) % b;
@@ -192,20 +207,28 @@ function layer(n, x, y) {
         if (znodeX < 6) {
             return patternAt(TREE_Z_COMP, 0, 0, znodeX, y);
         }
+
+        if (X < no_nodes - 1 && znodeX >= 6 && y < 5) {
+            return patternAt(CONNECTION, 0, 0, znodeX - 6, y);
+        }
+
+    }
+    if (botX >= no_nodes * 12 - 6 && botX < no_nodes * 12 + 1 && y < 5) {
+        return patternAt(FINAL_CONNECTION, 0, 0, botX - no_nodes * 12 + 6, y);
     }
 
     //if (x < (no_nodes / 2) * 12 && y > x + 13) {
     //if (x < (no_nodes / 2) * 12 && y > x + 19) {
-    if (x < (no_nodes / 2) * 12 && y > x + 13) {
+    if (x < (no_nodes / 2) * 12 && y > x + no_nodes * 12 / 2 - 11) {
         const lineX = mod(x, 12);
         if (lineX >= 6 && lineX < 8) return mod(x + y, 2) == 1 ? BP : WP;
         if (lineX >= 9 && lineX < 11) return mod(x + y, 2) == 1 ? BP : WP;
-    } else if (x + y < 70 && x + y > 15 && y >= 4) {
+    } else if (x + y < 12 * no_nodes + 12 * no_nodes / 2 - 6 && x + y > 12 * no_nodes / 2 && y >= 4) {
         if (mod(botX + y, 12) == 1) return BP;
         if (mod(botX + y, 12) == 0) return WP;
         const crossingX = mod(botX - 7, 12);
         const crossingY = mod(y + 3, 12);
-        if (crossingX < 2 && crossingY < 6) {
+        if (botX > 0 && crossingX < 2 && crossingY < 6) {
             return patternAt(PAWN_CROSSING, 0, 0, crossingX, crossingY);
         }
     }
@@ -249,3 +272,19 @@ export const PAWN_CROSSING = [
     [WP, EM],
     [WP, EM]
 ]
+
+export const CONNECTION = [
+    [EM, BP, WP, BP, EM],
+    [BP, WP, EM, WP, BP],
+    [WP, BP, EM, BP, WP],
+    [BP, WP, EM, WP, BP],
+    [WP, BP, EM, BP, WP],
+];
+
+export const FINAL_CONNECTION = [
+    [EM, BP, WP, BP, EM, EM, EM, EM],
+    [BP, WP, EM, WP, BP, EM, EM, EM],
+    [WP, BP, EM, EM, WP, BP, EM, EM],
+    [BP, WP, EM, EM, EM, WP, BP, EM],
+    [WP, BP, EM, EM, BP, EM, WP, BP],
+];
