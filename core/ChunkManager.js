@@ -59,6 +59,27 @@ export default class ChunkManager {
         chunk.updateTexture()
     }
 
+    /**
+     * Set the highlighted tiles. `tiles` is an array of [worldX, worldY].
+     * Clears all previous highlights, then sets the new ones.
+     */
+    setHighlights(tiles) {
+        // clear all existing highlights
+        for (const chunk of this.chunks.values()) {
+            chunk.highlightData.fill(0)
+            const gl = chunk.gl
+            gl.bindTexture(gl.TEXTURE_2D, chunk.highlightTexture)
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, chunk.size, chunk.size, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, chunk.highlightData)
+        }
+        // set new highlights
+        for (const [wx, wy] of tiles) {
+            const cx = Math.floor(wx / 16)
+            const cy = Math.floor(wy / 16)
+            const chunk = this.getChunk(cx, cy)
+            chunk.setHighlightWorld(wx, wy, true)
+        }
+    }
+
     getVisibleChunks() {
         return this.chunks.values()
     }

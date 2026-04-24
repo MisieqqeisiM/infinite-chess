@@ -1,4 +1,5 @@
 export async function loadShader(path) {
-    const res = await fetch(path)
+    const url = new URL(path, import.meta.url)
+    const res = await fetch(url)
     return await res.text()
 }

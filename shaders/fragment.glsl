@@ -32,7 +32,7 @@ void main() {
     if(board < 0.0)
         color = vec3(1.0);
     else
-        color = vec3(0.89, 0.59, 0.85);
+        color = vec3(1.0, 0.8, 0.9);
 
     vec2 tex = (tile + 0.5) / u_chunkSize;
 
@@ -65,11 +65,12 @@ void main() {
     }
 
     float u_highlightDotRadius = 0.3;
-    vec3 u_highlightDotColor = vec3(1.0, 0.0, 0.0);
-    float u_highlightDotAlpha = 0.8;
     // sample per-tile highlight texture and draw a dot in the tile center
     float h = texture2D(u_highlightChunk, tex).r;
     if(h > 0.5) {
+        // grey dot for empty squares, red dot for occupied squares
+        vec3 u_highlightDotColor = (piece > 0.0) ? vec3(0.8, 0.1, 0.1) : vec3(0.0, 0.0, 0.0);
+        float u_highlightDotAlpha = (piece > 0.0) ? 0.9 : 0.2;
         float dist = distance(tileUV, vec2(0.5));
         float dotAlpha = 1.0 - smoothstep(u_highlightDotRadius - 0.02, u_highlightDotRadius + 0.02, dist);
         color = mix(color, u_highlightDotColor, dotAlpha * u_highlightDotAlpha);

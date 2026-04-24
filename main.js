@@ -2,7 +2,13 @@ import Renderer from "./core/Renderer.js"
 import Camera from "./core/Camera.js"
 import ChunkManager from "./core/ChunkManager.js"
 import TextureAtlas from "./core/TextureAtlas.js"
-import { EM, getPiece } from "./core/Patterns.js"
+import { EM, getPiece, getTreePiece, getExamplePiece, getLegalMoves } from "./core/Patterns.js"
+
+// pick generator based on the HTML filename
+const page = location.pathname.split('/').pop()
+const generator = page === 'tree.html' ? getTreePiece
+    : page === 'example.html' ? getExamplePiece
+        : getPiece
 
 
 
@@ -12,7 +18,7 @@ const canvas = document.getElementById("canvas")
 const renderer = new Renderer(canvas)
 const atlas = new TextureAtlas(renderer.gl)
 const camera = new Camera()
-const chunks = new ChunkManager(renderer, getPiece)
+const chunks = new ChunkManager(renderer, generator)
 
 await atlas.load([
     "king",
@@ -115,6 +121,11 @@ canvas.onclick = e => {
         selectedPiece = chunks.getPiece(x, y)
         selectedPiecePos = [x, y]
         renderer.setSelectedPiece(x, y)
+        // highlight legal moves for the selected piece
+        if (selectedPiece !== EM) {
+            const legalMoves = getLegalMoves(x, y, selectedPiece, (tx, ty) => chunks.getPiece(tx, ty))
+            chunks.setHighlights(legalMoves)
+        }
     } else {
         // perform move and record it
         const fromX = selectedPiecePos[0]
@@ -141,6 +152,7 @@ function deselect() {
     selectedPiece = null;
     selectedPiecePos = null;
     renderer.setSelectedPiece(-1000, -1000)
+    chunks.setHighlights([]) // clear all highlights
 }
 
 // keyboard shortcuts for undo/redo: Z = undo, R = redo

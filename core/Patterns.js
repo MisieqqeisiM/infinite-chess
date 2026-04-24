@@ -281,6 +281,80 @@ export const CONNECTION = [
     [WP, BP, EM, BP, WP],
 ];
 
+export function getExamplePiece(x, y) {
+    if (x == 0 && y == 0) return WN;
+    if (x == 1 && y == 0) return WP;
+    if (x == 2 && y == 0) return WK;
+    if (x == 3 && y == 0) return WR;
+    if (x == 4 && y == 0) return WB;
+    if (x == 5 && y == 0) return WQ;
+    return EM;
+}
+
+/**
+ * Returns an array of [x, y] world-coordinate tiles that the piece at (px, py)
+ * can move to. getPieceFn(x,y) returns the piece id at world tile (x,y).
+ * Moves are generated infinitely along rays for sliding pieces.
+ */
+export function getLegalMoves(px, py, piece, getPieceFn) {
+    const moves = [];
+    const isWhite = piece >= WK && piece <= WP;
+
+    function isEnemy(id) {
+        if (id === EM) return false;
+        return isWhite ? (id >= BK && id <= BP) : (id >= WK && id <= WP);
+    }
+    function isEmpty(id) { return id === EM; }
+    function canLand(id) { return isEmpty(id) || isEnemy(id); }
+
+    function ray(dx, dy) {
+        let x = px + dx, y = py + dy;
+        for (let i = 0; i < 200; i++) {
+            const t = getPieceFn(x, y);
+            if (!canLand(t)) break;
+            moves.push([x, y]);
+            if (isEnemy(t)) break; // capture, stop ray
+            x += dx; y += dy;
+        }
+    }
+
+    const p = piece > WP ? piece - 6 : piece; // normalize to white equivalent
+    // WK=1 WQ=2 WR=3 WB=4 WN=5 WP=6
+
+    if (p === WK) {
+        for (let dx = -1; dx <= 1; dx++)
+            for (let dy = -1; dy <= 1; dy++)
+                if (dx || dy) {
+                    const t = getPieceFn(px + dx, py + dy);
+                    if (canLand(t)) moves.push([px + dx, py + dy]);
+                }
+    } else if (p === WQ) {
+        for (let dx = -1; dx <= 1; dx++)
+            for (let dy = -1; dy <= 1; dy++)
+                if (dx || dy) ray(dx, dy);
+    } else if (p === WR) {
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) ray(dx, dy);
+    } else if (p === WB) {
+        for (const [dx, dy] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) ray(dx, dy);
+    } else if (p === WN) {
+        for (const [dx, dy] of [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]]) {
+            const t = getPieceFn(px + dx, py + dy);
+            if (canLand(t)) moves.push([px + dx, py + dy]);
+        }
+    } else if (p === WP) {
+        const dir = isWhite ? 1 : -1;
+        // forward
+        if (isEmpty(getPieceFn(px, py + dir))) moves.push([px, py + dir]);
+        // captures
+        for (const dx of [-1, 1]) {
+            const t = getPieceFn(px + dx, py + dir);
+            if (isEnemy(t)) moves.push([px + dx, py + dir]);
+        }
+    }
+
+    return moves;
+}
+
 export const FINAL_CONNECTION = [
     [EM, BP, WP, BP, EM, EM, EM, EM],
     [BP, WP, EM, WP, BP, EM, EM, EM],
