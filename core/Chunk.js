@@ -2,7 +2,7 @@ import { getPiece, getTreePiece } from "./Patterns.js";
 
 export default class Chunk {
 
-    constructor(gl, x, y, size = 16) {
+    constructor(gl, x, y, size = 16, generator = undefined) {
         this.x = x
         this.y = y
         this.size = size
@@ -19,7 +19,7 @@ export default class Chunk {
 
                 const x = (this.x * size + dx);
                 const y = (this.y * size + dy);
-                this.data[dy * size + dx] = getTreePiece(x, y);
+                this.data[dy * size + dx] = generator ? generator(x, y) : getTreePiece(x, y);
             }
         }
 

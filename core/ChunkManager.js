@@ -2,11 +2,13 @@ import Chunk from "./Chunk.js"
 
 export default class ChunkManager {
 
-    constructor(renderer) {
+    constructor(renderer, chunkGenerator = undefined) {
         this.renderer = renderer
         this.gl = renderer.gl
         this.chunks = new Map()
         this.viewDistance = 6
+        // optional generator function (x,y) => piece id used when creating new chunks
+        this.generator = chunkGenerator
     }
 
     key(x, y) {
@@ -29,7 +31,8 @@ export default class ChunkManager {
     getChunk(x, y) {
         const k = this.key(x, y)
         if (!this.chunks.has(k)) {
-            const chunk = new Chunk(this.gl, x, y)
+            // pass the optional generator down to Chunk; Chunk will fall back to its own default
+            const chunk = new Chunk(this.gl, x, y, 16, this.generator)
             this.chunks.set(k, chunk)
         }
         return this.chunks.get(k)

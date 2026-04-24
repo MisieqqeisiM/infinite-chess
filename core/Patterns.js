@@ -128,7 +128,7 @@ function whiteNode(intersection, x, y) {
     const [n, m] = intersection;
     const patternX = (n + m) / 2 * k;
     const patternY = (m - n) / 2 * k;
-    return patternAt(WHITE_NODE, patternX - 5, patternY - 13, x, y);
+    return patternAt(WHITE_NODE, patternX - 5, patternY - 9, x, y);
 }
 
 function blackNode(intersection, x, y) {
