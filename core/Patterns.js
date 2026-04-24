@@ -163,7 +163,14 @@ export function getPiece(x, y) {
 }
 
 export function getTreePiece(x, y) {
-    if (y >= 0) return treeRootNode(x, y);
+    if (y >= 7) return patternAt(TREE_ROOT_NODE, -4, 7, x, y);
+    if (x + y == 4) return WP;
+    if (x + y == 5) return BP;
+    if (x - y == -8) return WP;
+    if (x - y == -9) return BP;
+    if (x == -4 && y == 0) return BP;
+    if (x == -4 && y == 1) return BP;
+    if (y >= 0) return EM;
     let n = -1;
     let depth = 0
     let shift = 0;
@@ -178,12 +185,14 @@ export function getTreePiece(x, y) {
 
 function layerShift(n) {
     if (n == 0) return 0;
+    if (n == 1) return 3;
     const no_nodes = pow(2, n);
     return 12 * no_nodes / 4 - 10;
 }
 
 function layerDepth(n) {
-    if (n == 0) return 14 + 4;
+    if (n == 0) return 15;
+    if (n == 1) return 19;
     const no_nodes = pow(2, n)
     const bottom_width = 12 * no_nodes;
     return bottom_width - 10;
@@ -195,11 +204,23 @@ function mod(a, b) {
 function layer(n, x, y) {
     const depth = layerDepth(n);
     const no_nodes = pow(2, n);
+
+    if (n == 0) {
+        if (x + y == 10) return WP;
+        if (x + y == 11) return BP;
+        let result = patternAt(TREE_Z_COMP, -2, 0, x, y);
+        if (result != EM) return result;
+        result = patternAt(FIRST_FINAL_CONNECTION, 4, 0, x, y);
+        return result;
+    }
     if (x < 0) return EM;
     if (y >= depth) return EM;
     if (y < 0) return EM;
     const botX = x - 12 * no_nodes / 2 + 10;
     if (y < 14) {
+        if (botX >= no_nodes * 12 - 6 && botX < no_nodes * 12 + 2 && y < 5) {
+            return patternAt(FINAL_CONNECTION, 0, 0, botX - no_nodes * 12 + 6, y);
+        }
         const X = Math.floor(botX / 12);
         if (X < 0 || X >= no_nodes) return EM;
 
@@ -213,14 +234,28 @@ function layer(n, x, y) {
         }
 
     }
-    if (botX >= no_nodes * 12 - 6 && botX < no_nodes * 12 + 1 && y < 5) {
-        return patternAt(FINAL_CONNECTION, 0, 0, botX - no_nodes * 12 + 6, y);
-    }
 
     //if (x < (no_nodes / 2) * 12 && y > x + 13) {
     //if (x < (no_nodes / 2) * 12 && y > x + 19) {
-    if (x < (no_nodes / 2) * 12 && y > x + no_nodes * 12 / 2 - 11) {
-        const lineX = mod(x, 12);
+
+    if (n == 1) {
+        if (x == 1 || x == 2) return mod(x + y, 2) == 1 ? BP : WP;
+        if (botX + y == 25) return BP;
+        if (botX + y == 24) return WP;
+        if (x >= 1) {
+            if (botX + y == 13) return BP;
+            if (botX + y == 12) return WP;
+        }
+        return patternAt(PAWN_CROSSING, 9, 9, x, y);
+    }
+
+    const lineX = mod(x, 12);
+
+    let modifier = 0;
+    if (lineX > 7 || lineX == 0)
+        modifier = 6;
+
+    if (x < (no_nodes / 2) * 12 && y > x + no_nodes * 12 / 2 - 11 + modifier) {
         if (lineX >= 6 && lineX < 8) return mod(x + y, 2) == 1 ? BP : WP;
         if (lineX >= 9 && lineX < 11) return mod(x + y, 2) == 1 ? BP : WP;
     } else if (x + y < 12 * no_nodes + 12 * no_nodes / 2 - 6 && x + y > 12 * no_nodes / 2 && y >= 4) {
@@ -361,4 +396,12 @@ export const FINAL_CONNECTION = [
     [WP, BP, EM, EM, WP, BP, EM, EM],
     [BP, WP, EM, EM, EM, WP, BP, EM],
     [WP, BP, EM, EM, BP, EM, WP, BP],
+];
+
+export const FIRST_FINAL_CONNECTION = [
+    [EM, BP, WP, BP, EM, EM, EM, EM],
+    [BP, WP, EM, WP, BP, EM, EM, EM],
+    [WP, BP, EM, EM, WP, BP, EM, EM],
+    [BP, WP, EM, EM, EM, WP, BP, EM],
+    [WP, BP, EM, EM, EM, EM, WP, BP],
 ];

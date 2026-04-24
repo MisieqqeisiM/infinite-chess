@@ -94,7 +94,7 @@ canvas.onmousedown = e => {
 canvas.onmouseup = () => dragging = false
 
 canvas.onmousemove = e => {
-    if (moveStartX - e.clientX > 3 || moveStartY - e.clientY > 3) {
+    if (Math.abs(moveStartX - e.clientX) > 3 || Math.abs(moveStartY - e.clientY) > 3) {
         moved = true
     }
     if (!dragging) return
